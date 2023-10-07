@@ -14,7 +14,7 @@ public class JohnWick extends AdvancedRobot {
         setBodyColor(java.awt.Color.black);
 
         while (true) {
-		turnRadarRight(45);
+			turnRadarRight(45);
 			turnGunRight(45);
 			ahead(90);
 			turnLeft(70);
@@ -41,13 +41,14 @@ public class JohnWick extends AdvancedRobot {
         double power = Math.min(3, 400 / enemyDistance);
         
         // Atire no inimigo
-        fire(power);
+        fire(3);
     }
 
     public void onHitByBullet(HitByBulletEvent event) {
         // Quando o robô é atingido por uma bala, faça uma ação evasiva
-        setAhead(100); // Mova-se para frente
-        setTurnRight(90); // Gire 90 graus para a direita
+		 setTurnGunRight(Math.toDegrees(1));
+        setTurnGunRightRadians(1);
+		setFire(3);
     }
 
     public void onHitWall(HitWallEvent event) {
