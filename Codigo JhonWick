@@ -1,58 +1,76 @@
-package Jhonwick;
+package sample;
 
-
+import robocode.HitRobotEvent;
 import robocode.Robot;
 import robocode.ScannedRobotEvent;
 import robocode.WinEvent;
 import static robocode.util.Utils.normalRelativeAngleDegrees;
+import java.awt.Color;
 
-import java.awt.*;
+public class Jhonwickv12 extends Robot {
+	int gunDirection = 1;
+	boolean peek;
+	double moveAmount;
 
-public class JhonWickV12 extends Robot {
+	public void run() {
 
-public void run() {
-    setBodyColor(Color.black);
-    setRadarColor(Color.green);
-    setGunColor(Color.black);
-    setBulletColor(Color.orange);
-    while (true) {
-            // Gira à direita indefinidamente
-            turnRight(360);
-            // Move-se para frente
-            ahead(100);
-    }
-  }
+		setBodyColor(Color.pink);
+		setGunColor(Color.pink);
+		setRadarColor(Color.pink);
+		setBulletColor(Color.pink);
+		setScanColor(Color.pink);
 
-	public void onScannedRobot(ScannedRobotEvent e) {
-	
-		// Calculate exact location of the robot
+		moveAmount = Math.max(getBattleFieldWidth(), getBattleFieldHeight());
+
+		peek = false;
+
+		turnLeft(getHeading() % 90);
+		ahead(moveAmount);
+		peek = true;
+		turnGunRight(360);
+		turnRight(90);
+		
+		while (true) {
+
+			peek = true;
+			ahead(moveAmount);
+			peek = false;
+			turnRight(90);
+		}
+	}
+
+	public void onHitRobot(HitRobotEvent e) {
+		if (e.getBearing() > -90 && e.getBearing() < 90) {
+			back(100);
+		}
+		else {
+			ahead(100);
+		}
+	}
+
+	public void 
+	onScannedRobot(ScannedRobotEvent e) {
+		
 		double absoluteBearing = getHeading() + e.getBearing();
 		double bearingFromGun = normalRelativeAngleDegrees(absoluteBearing - getGunHeading());
 
-		// If it's close enough, fire!
-		if (Math.abs(bearingFromGun) <= 3) {
+		if (Math.abs(bearingFromGun) <= 40) {
 			turnGunRight(bearingFromGun);
-			// We check gun heat here, because calling fire()
-			// uses a turn, which could cause us to lose track
-			// of the other robot.
 			if (getGunHeat() == 0) {
 				fire(Math.min(3 - Math.abs(bearingFromGun), getEnergy() - .1));
 			}
-		} // otherwise just set the gun to turn.
-		// Note:  This will have no effect until we call scan()
+		} 
+		
 		else {
 			turnGunRight(bearingFromGun);
 		}
-		// Generates another scan event if we see a robot.
-		// We only need to call this if the gun (and therefore radar)
-		// are not turning.  Otherwise, scan is called automatically.
-		if (bearingFromGun == 0) {
+	
+		if (peek) {
 			scan();
 		}
 	}
 
 	public void onWin(WinEvent e) {
-		// Victory dance
 		turnRight(36000);
 	}
-}				
+}
