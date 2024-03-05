@@ -1,76 +1,32 @@
 package sample;
-
+import robocode.*;
+import robocode.AdvancedRobot;
 import robocode.HitRobotEvent;
-import robocode.Robot;
 import robocode.ScannedRobotEvent;
-import robocode.WinEvent;
-import static robocode.util.Utils.normalRelativeAngleDegrees;
 import java.awt.Color;
 
-public class Jhonwickv12 extends Robot {
-	int gunDirection = 1;
-	boolean peek;
-	double moveAmount;
+public class JhonWickv19  extends AdvancedRobot {
 
-	public void run() {
-
-		setBodyColor(Color.pink);
-		setGunColor(Color.pink);
-		setRadarColor(Color.pink);
-		setBulletColor(Color.pink);
-		setScanColor(Color.pink);
-
-		moveAmount = Math.max(getBattleFieldWidth(), getBattleFieldHeight());
-
-		peek = false;
-
-		turnLeft(getHeading() % 90);
-		ahead(moveAmount);
-		peek = true;
-		turnGunRight(360);
-		turnRight(90);
-		
-		while (true) {
-
-			peek = true;
-			ahead(moveAmount);
-			peek = false;
-			turnRight(90);
-		}
-	}
-
-	public void onHitRobot(HitRobotEvent e) {
-		if (e.getBearing() > -90 && e.getBearing() < 90) {
-			back(100);
-		}
-		else {
-			ahead(100);
-		}
-	}
-
-	public void 
-	onScannedRobot(ScannedRobotEvent e) {
-		
-		double absoluteBearing = getHeading() + e.getBearing();
-		double bearingFromGun = normalRelativeAngleDegrees(absoluteBearing - getGunHeading());
-
-		if (Math.abs(bearingFromGun) <= 40) {
-			turnGunRight(bearingFromGun);
-			if (getGunHeat() == 0) {
-				fire(Math.min(3 - Math.abs(bearingFromGun), getEnergy() - .1));
-			}
-		} 
-		
-		else {
-			turnGunRight(bearingFromGun);
-		}
-	
-		if (peek) {
-			scan();
-		}
-	}
-
-	public void onWin(WinEvent e) {
-		turnRight(36000);
-	}
+    public void run() { // Defina Cores
+        setBodyColor(Color.blue);
+        setGunColor(Color.blue);
+        setRadarColor(Color.black);
+        setScanColor(Color.yellow);
+        while (true) { // Fazer Movimento Circular
+            setTurnRight(10000);
+            setMaxVelocity(5);
+            ahead(10000);
+        }
+    }
+    public void onScannedRobot(ScannedRobotEvent e) { // scaneia o adversario
+        fire(3);
+    }
+    public void onHitRobot(HitRobotEvent e) { // Atirar se o Robo tiver na Frente
+        if (Math.abs(e.getBearing()) < 10) {
+            fire(3);
+        }
+        if (e.isMyFault()) {
+            turnRight(10);
+        }
+    }
 }
