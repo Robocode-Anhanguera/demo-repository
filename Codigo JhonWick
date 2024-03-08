@@ -1,4 +1,4 @@
-package supersample;
+package sample;
 
 import java.awt.Color;
 import robocode.AdvancedRobot;
