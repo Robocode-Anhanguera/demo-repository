@@ -101,7 +101,7 @@ public class Jhonwickzz24 extends AdvancedRobot{
             setFire(3); // força maxima
          }
          else{
-            setFire(2.4); // se não, força 2.4
+            setFire(1.5); // se não, força 1.5
          }
          
          double radarTurn = getHeadingRadians() + e.getBearingRadians()
