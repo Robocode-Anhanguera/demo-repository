@@ -1,116 +1,116 @@
-package supersample;
+package sample;
 
-import java.awt.Color;
-import robocode.AdvancedRobot;
-import robocode.HitByBulletEvent;
-import robocode.ScannedRobotEvent;
-import robocode.util.Utils;
+import robocode.*;
+import static robocode.util.Utils.normalRelativeAngleDegrees;
+import java.awt.*;
+ 
+public class jhonwick3 extends AdvancedRobot {
+	boolean movingForward;
+	boolean inWall;
+ 
+	public void run() {
+	
+		setBodyColor(new Color(221, 175, 19));
+		setGunColor(new Color(11,77,113));
+		setRadarColor(new Color(99,228,199));
+		setBulletColor(new Color(255,238,0));
+		setScanColor(new Color(255,241,46));
+ 
+	
+		setAdjustRadarForRobotTurn(true);
+		setAdjustGunForRobotTurn(true);
+		setAdjustRadarForGunTurn(true);
+ 
+	
+		if (getX() <= 50 || getY() <= 50 || getBattleFieldWidth() - getX() <= 50 || getBattleFieldHeight() - getY() <= 50) {
+				inWall = true;
+			} else {
+			inWall = false;
+		}
+ 
+		setAhead(40000);
+		setTurnRadarRight(360);
+		movingForward = true;
+ 
+		while (true) {
+		
+			if (getX() > 50 && getY() > 50 && getBattleFieldWidth() - getX() > 50 && getBattleFieldHeight() - getY() > 50 && inWall == true) {
+				inWall = false;
+			}
+			if (getX() <= 50 || getY() <= 50 || getBattleFieldWidth() - getX() <= 50 || getBattleFieldHeight() - getY() <= 50 ) {
+				if ( inWall == false){
+					reverseDirection();
+					inWall = true;
+				}
+			}
+ 
+		
+			if (getRadarTurnRemaining() == 0.0){
+			setTurnRadarRight(360);
+			}
+ 
+			execute();
+ 
+		}
+	}
+ 
+ 
+ 
 
-public class JhonwickRedenção extends AdvancedRobot{
+	public void onHitWall(HitWallEvent e) {
+		
+		reverseDirection();
+	}
+ 
 
-    private boolean moved = false; // se precisamos nos mover ou girar
-   private boolean inCorner = false; // se estamos em um canto
-   private String targ; // qual robô para mirar
-   private byte spins = 0; // contador de giro
-   private byte dir = 1; // direção para se mover
-   private short prevE; // energia anterior do robô que estamos mirando
+	public void reverseDirection() {
+		if (movingForward) {
+			setBack(40000);
+			movingForward = false;
+		} else {
+			setAhead(40000);
+			movingForward = true;
+		}
+	}
+ 
+ 
+	public void onScannedRobot(ScannedRobotEvent e) {
+	
+		double absoluteBearing = getHeading() + e.getBearing();
+		double bearingFromGun = normalRelativeAngleDegrees(absoluteBearing - getGunHeading());
+		double bearingFromRadar = normalRelativeAngleDegrees(absoluteBearing - getRadarHeading());
+ 
+	
+		if (movingForward){
+			setTurnRight(normalRelativeAngleDegrees(e.getBearing() + 80));
+		} else {
+			setTurnRight(normalRelativeAngleDegrees(e.getBearing() + 100));
+		}
+ 
+ 
+	
+		if (Math.abs(bearingFromGun) <= 4) {
+			setTurnGunRight(bearingFromGun); 
+			setTurnRadarRight(bearingFromRadar);
+			if (getGunHeat() == 0 && getEnergy() > .2) {
+				fire(Math.min(1.5 - Math.abs(bearingFromGun) / 1.5 - e.getDistance() / 250, getEnergy() - .1));
+			} 
+		}
+		else {
+			setTurnGunRight(bearingFromGun);
+			setTurnRadarRight(bearingFromRadar);
+		}
+	
+		if (bearingFromGun == 0) {
+			scan();
+		}
+	}		
+ 
 
-   @Override
-  public void run(){
-      setColors(Color.black, Color.black, Color.red); 
-      setAdjustGunForRobotTurn(true); // quando o robô gira, ajuste a arma.
-      setAdjustRadarForGunTurn(true);
-      while(true){ // bloquear o radar
-         turnRadarLeftRadians(3.5); // girar o radar para a esquerda em 3,5 radianos
-      }
-   }
-
-   @Override
-  public void onHitByBullet(HitByBulletEvent e){
-      targ = e.getName(); // mirar no safado quem me atingiu
-   }
-
-   @Override
-   public void onScannedRobot(ScannedRobotEvent e){
-      if(targ == null || spins > 32){ // se não emcontrar ninguem
-         targ = e.getName(); // foca no primeiro robo que ve
-      }
-
-      if(getDistanceRemaining() == 0 && getTurnRemaining() == 0){ // não se mover e girar
-         if(inCorner){
-            if(moved){ // estudar melhor o significado
-               setTurnLeft(90);
-               moved = false; // estudar melhor o significado
-            }
-            else{
-               setAhead(160 * dir); // mover para a frente
-               moved = true; // continuar se movendo
-            }
-         }
-
-        else{
-            // isso é para ir para o norte ou sul
-            if((getHeading() % 90) != 0){
-               setTurnLeft((getY() > (getBattleFieldHeight() / 2)) ? getHeading()
-                     : getHeading() - 180);
-            }
-            // isso é para ir para o mais proximo entre baixo e cima
-            else if(getY() > 30 && getY() < getBattleFieldHeight() - 30){
-               setAhead(getHeading() > 90 ? getY() - 20 : getBattleFieldHeight() - getY()
-                     - 20);
-            }
-            // e isso para o mais proximo de esquerda e direita
-			// estudar melhor essas movimentações
-            else if(getHeading() != 90 && getHeading() != 270){
-               if(getX() < 350){
-                  setTurnLeft(getY() > 300 ? 90 : -90);
-               }
-               else{
-                  setTurnRight(getY() > 300? -90 : 90);
-               }
-            }
-            // ir ao canto mais proximo
-            else if(getX() > 30 && getX() < getBattleFieldWidth() - 30){
-               setAhead(getHeading() < 180 ? getX() - 20 : getBattleFieldWidth() - getX()
-                     - 20);
-            }
-            // se mover ao chegar no canto
-            else if(getHeading() == 270){
-               setTurnLeft(getY() > 200 ? 90 : 180);
-               inCorner = true;
-            }
-            // mesma coisa de cima
-            else if(getHeading() == 90){
-               setTurnLeft(getY() > 200 ? 180 : 90);
-               inCorner = true;
-            }
-         }
-      }
-      if(e.getName().equals(targ)){ // localizou um alvo?
-         spins = 0; // reset o radar
-         
-         // se o safado atirar, tente desviar
-         if((prevE < (prevE = (short)e.getEnergy())) && Math.random() > .85){
-            dir *= -1; // essa direção
-         }
-         
-         setTurnGunRightRadians(Utils.normalRelativeAngle((getHeadingRadians() + e
-               .getBearingRadians()) - getGunHeadingRadians())); // move a arma pro safado
-         
-         if(e.getDistance() < 200){ // se a distancia for menor que 200px
-            setFire(1); // força maxima
-         }
-         else{
-            setFire(1); // se não, força 2.4
-         }
-         
-         double radarTurn = getHeadingRadians() + e.getBearingRadians()
-               - getRadarHeadingRadians();
-         setTurnRadarRightRadians(2 * Utils.normalRelativeAngle(radarTurn)); // travar radar
-      }
-      else if(targ != null){
-         spins++; // estudar melhor, mas isso adiciona 1 na contagem de tiros
-      }
-   }
-
+	public void onHitRobot(HitRobotEvent e) {
+	
+		if (e.isMyFault()) {
+			reverseDirection();
+		}
+	}
 }
